@@ -1,0 +1,137 @@
+<!--
+https://qiita.com/opengl-8080/items/56b4b6a9d31bac0cb3e2
+https://qiita.com/nyamogera/items/37a4799d19e0916d8689
+
+ローカルにファイル保存したい(IndexedDatabase→FileWriteAPI)
+http://blog.engineer.adways.net/entry/2016/11/03/151129
+https://www.html5rocks.com/ja/tutorials/file/filesystem/
+markdownを保存する。HTMLはあくまでエクスポート形式のひとつ。ePub, plain-textにも出力したい。
+
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+<script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+<!--<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>-->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.2.2/markdown-it.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ace.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/mode-markdown.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/snippets/markdown.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ext-language_tools.js"></script>
+
+<!-- https://cdnjs.com/libraries/highlight.js/ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+<!--<script src="ruby_denden.js"></script>-->
+<script src="novel.formatter.md2html.denden.js"></script>
+<script src="index.js"></script>
+<link rel="stylesheet" href="index.css">
+</head>
+<body>
+	<span id="count">0字</span>
+	<a id="downloadButton" href="">ダウンロード</a>
+	<div class="wrapper">
+		<div id="markdown_editor"># MD→HTML for JS
+
+1. [ルビ](#ルビ)
+1. [概要](#概要)
+1. [HTMLテスト](#HTMLテスト)
+
+## ルビ
+
+{漢字|かん|じ}のようにルビを{振|ふ}る。「とある{科学|かがく}の{超電磁砲|レールガン}」のように中二病チックなルビも可。
+
+## 概要
+
+テキストエリアに入力したMarkdownをHTMLに変換し、プレビューする。
+
+[markdown-it](https://github.com/markdown-it/markdown-it)というライブラリを使う。JavaScript製。CDNサイトから入手している。ローカルで使いたいならJSライブラリをローカルにダウンロードし、リンクすべし。
+
+テキストエディタには[ace](https://ace.c9.io/build/kitchen-sink.html)を使う。これもJS製でCDNサイトから。[highlight.js](https://highlightjs.org/)によって描画される。
+
+DOMセレクタとして[jQuery](https://code.jquery.com/)を使っている。
+
+### 自作
+
+```
+{漢字|かん|じ}
+```
+```html
+<ruby>漢<rt>かん</rt>字<rt>じ</rt></ruby>
+```
+
+&lt;ruby&gt;漢&lt;rt&gt;かん&lt;/rt&gt;字&lt;rt&gt;じ&lt;/rt&gt;&lt;/ruby&gt;
+
+ルビの簡略記法を自作した。
+
+#### 状況
+
+* HTML5にはルビ記法がある
+* Markdownにルビ記法はない
+	* Markdownの方言が乱立している状況
+
+#### 経緯
+
+1. [markdown-it-ruby](https://www.npmjs.com/package/markdown-it-ruby)を使って楽しようと思った
+1. 逆に苦労した
+	* 環境構築、コマンド操作、独自設定、独自言語(require()等)
+		* インストールせねばならないものが多すぎる
+			* Node.js, nmp, n, webpack
+				* [markdown-it](https://github.com/markdown-it/markdown-it)
+					* [markdown-it-ruby](https://www.npmjs.com/package/markdown-it-ruby)
+1. 失望した
+	* ブラウザでの実装と異なるコードを書かねばならない
+		* Aceの実装方法がわからなかった
+		* 生成されるコードが1ファイルになる
+			* コード量が多すぎて可読性最悪（2万行近かった）
+	* ファイルサイズ大きすぎ（560KB）
+		* 圧縮しようとしたが、ES6(2015)化が必要だとか、webpackが未対応だとか、設定の仕方などの情報が錯綜している
+			* 結局圧縮できなかった
+1. 結論
+	* ルビ変換はできた
+	* [ace](https://ace.c9.io/build/kitchen-sink.html)をwebpackコードで使う方法がわからなかったので断念した
+
+その後、自前で変換処理を実装することにした。JavaScriptだけで書けたほうが楽。
+
+
+## HTMLテスト
+
+* 項目1
+* 項目2
+
+順序付き。
+
+1. 項目1
+1. 項目2
+
+アルファベット
+
+A. 項目A
+A. 項目B
+
+{漢字|かん|じ}
+
+<ruby>漢<rt>かん</rt>字<rt>じ</rt></ruby>
+
+&lt;ruby&gt;漢&lt;rt&gt;かん&lt;/rt&gt;字&lt;rt&gt;じ&lt;/rt&gt;&lt;/ruby&gt;
+
+<ruby>漢<rp>(</rp><rt>かん</rt><rp>)</rp>字<rp>(</rp><rt>じ</rt><rp>)</rp></ruby>
+
+&lt;ruby&gt;漢&lt;rp&gt;(&lt;/rp&gt;&lt;rt&gt;かん&lt;/rt&gt;&lt;rp&gt;)&lt;/rp&gt;字&lt;rp&gt;(&lt;/rp&gt;&lt;rt&gt;じ&lt;/rt&gt;&lt;rp&gt;)&lt;/rp&gt;&lt;/ruby&gt;
+
+<ruby>漢<rp><rt>かん</rt></rp>字<rp><rt>じ</rt></rp></ruby>
+
+&lt;ruby&gt;漢&lt;rp&gt;&lt;rt&gt;かん&lt;/rt&gt;&lt;/rp&gt;字&lt;rp&gt;&lt;rt&gt;じ&lt;/rt&gt;&lt;/rp&gt;&lt;/ruby&gt;
+
+[Google](http://www.google.col.jp)</div>
+
+		<!--<div id="html_code_viewer"></div>-->
+		<div id="preview"></div>
+	</div>
+</body>
+</html>
